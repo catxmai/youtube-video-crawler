@@ -10,13 +10,16 @@ import csv
 import traceback
 import random
 
-def create_driver(headless):
+def create_driver(headless, user_data_dir=""):
 
     options = webdriver.ChromeOptions()
     options.add_argument("--window-size=1540,1080")
     options.add_argument("--disable-extensions")
     if headless:
         options.add_argument("--headless=new")
+
+    if user_data_dir:
+        options.add_argument("user-data-dir=" + user_data_dir)
 
     driver = webdriver.Chrome(options = options)
 
@@ -37,8 +40,7 @@ def get_scroll_height(driver):
 
 def get_video_elements(driver):
 
-    video_parent = driver.find_element(By.CSS_SELECTOR, "#contents")
-    videos = video_parent.find_elements(By.CSS_SELECTOR, "ytd-rich-grid-row")
+    videos = driver.find_elements(By.CSS_SELECTOR, "#contents > ytd-rich-grid-row")
     return videos
 
 def parse_video_from_element(video_element):
@@ -53,7 +55,7 @@ def parse_video_from_element(video_element):
     return video_id, video_title
     
 
-def get_video_list(driver, run_id, channel_name, count_goal, save_freq):
+def get_video_list(driver, run_id, channel_name, count_goal):
 
     video_id_list, video_title_list = [], []
     current_count_on_page = len(get_video_elements(driver))
@@ -63,11 +65,11 @@ def get_video_list(driver, run_id, channel_name, count_goal, save_freq):
         writer.writerow(["video_id", "channel_name", "video_title"])
 
     while (current_count_on_page < count_goal):
-
-        scroll_pause_time = random.uniform(0.2, 20.5)
     
         current_height = get_scroll_height(driver)
 
+        scroll_pause_time = random.uniform(0.2, 20.0)
+        save_freq = random.randint(1, 8)
         for _ in range(save_freq):
             scroll_to_bottom(driver)
             time.sleep(scroll_pause_time)
@@ -75,17 +77,11 @@ def get_video_list(driver, run_id, channel_name, count_goal, save_freq):
         # check scroll difference. try again once, if not then break
         height_diff = current_height - get_scroll_height(driver)
         if height_diff == 0:
-            time.sleep(15)
+            time.sleep(10)
             scroll_to_bottom(driver)
             time.sleep(10)
             scroll_to_bottom(driver)
-            time.sleep(15)
-
-            height_diff = current_height - get_scroll_height(driver)
-            if height_diff == 0:
-                # replace with some end of list check before raising error
-                print("can't scroll more to bottom")
-                raise AssertionError("can't scroll more to bottom")
+            time.sleep(10)
             
         video_elements = get_video_elements(driver)[len(video_id_list):]
         for elem in video_elements:
@@ -99,15 +95,21 @@ def get_video_list(driver, run_id, channel_name, count_goal, save_freq):
 
         current_count_on_page = len(get_video_elements(driver))
 
+        height_diff = current_height - get_scroll_height(driver)
+        if height_diff == 0:
+            # replace with some end of list check before raising error
+            print("can't scroll more to bottom")
+            raise AssertionError("can't scroll more to bottom")
+
     return video_id_list, video_title_list
     
 
 
 if __name__ == "__main__":
 
-    repeat_count = 10
+    repeat_count = 2
     channel_list = [
-        ("ABC News", "https://www.youtube.com/@ABCNews/videos"),
+        # ("ABC News", "https://www.youtube.com/@ABCNews/videos"),
         ("WSJ", "https://www.youtube.com/@wsj/videos"),
         ("Vox", "https://www.youtube.com/@Vox/videos"),
         ("Washington Post", "https://www.youtube.com/@WashingtonPost/videos"),
@@ -137,7 +139,7 @@ if __name__ == "__main__":
             click_video_tab(driver, "Popular")
 
             try:
-                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000, save_freq=5)
+                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000)
             except Exception as e:
                 print(traceback.format_exc())
                 continue
