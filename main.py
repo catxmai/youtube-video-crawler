@@ -8,6 +8,7 @@ import time
 import re
 import csv
 import traceback
+import random
 
 def create_driver(headless):
 
@@ -52,7 +53,7 @@ def parse_video_from_element(video_element):
     return video_id, video_title
     
 
-def get_video_list(driver, run_id, channel_name, count_goal, save_freq, scroll_pause_time):
+def get_video_list(driver, run_id, channel_name, count_goal, save_freq):
 
     video_id_list, video_title_list = [], []
     current_count_on_page = len(get_video_elements(driver))
@@ -62,6 +63,8 @@ def get_video_list(driver, run_id, channel_name, count_goal, save_freq, scroll_p
         writer.writerow(["video_id", "channel_name", "video_title"])
 
     while (current_count_on_page < count_goal):
+
+        scroll_pause_time = random.uniform(0.2, 20.5)
     
         current_height = get_scroll_height(driver)
 
@@ -81,6 +84,7 @@ def get_video_list(driver, run_id, channel_name, count_goal, save_freq, scroll_p
             height_diff = current_height - get_scroll_height(driver)
             if height_diff == 0:
                 # replace with some end of list check before raising error
+                print("can't scroll more to bottom")
                 raise AssertionError("can't scroll more to bottom")
             
         video_elements = get_video_elements(driver)[len(video_id_list):]
@@ -133,7 +137,7 @@ if __name__ == "__main__":
             click_video_tab(driver, "Popular")
 
             try:
-                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000, save_freq=5, scroll_pause_time=5)
+                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000, save_freq=5)
             except Exception as e:
                 print(traceback.format_exc())
                 continue
