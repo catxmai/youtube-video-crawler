@@ -7,6 +7,7 @@ from selenium.common.exceptions import *
 import time
 import re
 import csv
+import traceback
 
 def create_driver(headless):
 
@@ -51,14 +52,14 @@ def parse_video_from_element(video_element):
     return video_id, video_title
     
 
-def get_video_list(driver, count_goal, save_freq, scroll_pause_time):
+def get_video_list(driver, channel_name, count_goal, save_freq, scroll_pause_time):
 
     video_id_list, video_title_list = [], []
     current_count_on_page = len(get_video_elements(driver))
 
-    with open("output.csv", 'w') as f:
+    with open(f"output_{channel_name}.csv", 'w') as f:
         writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
-        writer.writerow(["video_id", "video_title"])
+        writer.writerow(["video_id", "channel_name", "video_title"])
 
     while (current_count_on_page < count_goal):
     
@@ -86,9 +87,9 @@ def get_video_list(driver, count_goal, save_freq, scroll_pause_time):
             video_id_list.append(video_id)
             video_title_list.append(video_title)
 
-            with open("output.csv", 'a') as f:
+            with open(f"output_{channel_name}.csv", 'a') as f:
                 writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
-                writer.writerow([video_id, video_title])
+                writer.writerow([video_id, channel_name, video_title])
 
         current_count_on_page = len(get_video_elements(driver))
 
@@ -98,13 +99,34 @@ def get_video_list(driver, count_goal, save_freq, scroll_pause_time):
 
 if __name__ == "__main__":
 
-    driver = create_driver(headless=False)
 
-    channel_url = "https://www.youtube.com/@ABCNews/videos"
-    driver.get(channel_url)
+    channel_list = [
+        ("ABC News", "https://www.youtube.com/@ABCNews/videos"),
+        ("WSJ", "https://www.youtube.com/@wsj/videos"),
+        ("Vox", "https://www.youtube.com/@Vox/videos"),
+        ("Washington Post", "https://www.youtube.com/@WashingtonPost/videos"),
+        ("BBC News", "https://www.youtube.com/@BBCNews/videos"),
+        ("Politico", "https://www.youtube.com/@POLITICO/videos"),
+        ("Fox News", "https://www.youtube.com/@FoxNews/videos"),
+        ("BBC News", "https://www.youtube.com/@BBCNews/videos"),
+        ("Bloomberg Television", "https://www.youtube.com/@markets/videos"),
+        ("Forbes", "https://www.youtube.com/@Forbes/videos")
+    ]
 
-    WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
-    click_video_tab(driver, "Popular")
-    video_id_list, video_title_list = get_video_list(driver, count_goal=10000, save_freq=5, scroll_pause_time=2)
-    print(video_id_list)
-    print(len(video_id_list))
+    
+    for channel_name, channel_url in channel_list:
+        driver = create_driver(headless=False)
+        driver.get(channel_url)
+        channel_name = channel_name.replace(" ", "")
+
+        WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
+        click_video_tab(driver, "Popular")
+
+        try:
+            video_id_list, video_title_list = get_video_list(driver, channel_name, count_goal=2000, save_freq=5, scroll_pause_time=15)
+        except Exception as e:
+            print(traceback.format_exc())
+            continue
+        
+        driver.quit()
+        
