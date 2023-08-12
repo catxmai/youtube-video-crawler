@@ -52,12 +52,12 @@ def parse_video_from_element(video_element):
     return video_id, video_title
     
 
-def get_video_list(driver, channel_name, count_goal, save_freq, scroll_pause_time):
+def get_video_list(driver, run_id, channel_name, count_goal, save_freq, scroll_pause_time):
 
     video_id_list, video_title_list = [], []
     current_count_on_page = len(get_video_elements(driver))
 
-    with open(f"output_{channel_name}.csv", 'w') as f:
+    with open(f"output_{channel_name}_{run_id}.csv", 'w', encoding="utf-8") as f:
         writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
         writer.writerow(["video_id", "channel_name", "video_title"])
 
@@ -74,12 +74,14 @@ def get_video_list(driver, channel_name, count_goal, save_freq, scroll_pause_tim
         if height_diff == 0:
             time.sleep(15)
             scroll_to_bottom(driver)
-            time.sleep(scroll_pause_time)
+            time.sleep(10)
+            scroll_to_bottom(driver)
+            time.sleep(15)
 
             height_diff = current_height - get_scroll_height(driver)
             if height_diff == 0:
                 # replace with some end of list check before raising error
-                raise RuntimeError("can't scroll more to bottom")
+                raise AssertionError("can't scroll more to bottom")
             
         video_elements = get_video_elements(driver)[len(video_id_list):]
         for elem in video_elements:
@@ -87,7 +89,7 @@ def get_video_list(driver, channel_name, count_goal, save_freq, scroll_pause_tim
             video_id_list.append(video_id)
             video_title_list.append(video_title)
 
-            with open(f"output_{channel_name}.csv", 'a') as f:
+            with open(f"output_{channel_name}_{run_id}.csv", 'a', encoding="utf-8") as f:
                 writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
                 writer.writerow([video_id, channel_name, video_title])
 
@@ -99,34 +101,42 @@ def get_video_list(driver, channel_name, count_goal, save_freq, scroll_pause_tim
 
 if __name__ == "__main__":
 
-
+    repeat_count = 10
     channel_list = [
         ("ABC News", "https://www.youtube.com/@ABCNews/videos"),
         ("WSJ", "https://www.youtube.com/@wsj/videos"),
         ("Vox", "https://www.youtube.com/@Vox/videos"),
         ("Washington Post", "https://www.youtube.com/@WashingtonPost/videos"),
-        ("BBC News", "https://www.youtube.com/@BBCNews/videos"),
         ("Politico", "https://www.youtube.com/@POLITICO/videos"),
         ("Fox News", "https://www.youtube.com/@FoxNews/videos"),
         ("BBC News", "https://www.youtube.com/@BBCNews/videos"),
         ("Bloomberg Television", "https://www.youtube.com/@markets/videos"),
-        ("Forbes", "https://www.youtube.com/@Forbes/videos")
+        ("Forbes", "https://www.youtube.com/@Forbes/videos"),
+        ("CNN", "https://www.youtube.com/@CNN/videos"),
+        ("CBS", "https://www.youtube.com/@CBSNews/videos"),
+        ("Daily Mail", "https://www.youtube.com/@dailymail/videos"),
+        ("Reuters", "https://www.youtube.com/@Reuters/videos"),
+        ("The Hill", "https://www.youtube.com/@thehill/videos"),
+        ("USA Today", "https://www.youtube.com/@USATODAY/videos"),
+        ("Washington Times", "https://www.youtube.com/@washingtontimes/videos"),
+        ("The Epoch Times", "https://www.youtube.com/@TheEpochTimesNews/videos"),
+        ("TIME", "https://www.youtube.com/@TIME/videos")
     ]
 
-    
-    for channel_name, channel_url in channel_list:
-        driver = create_driver(headless=False)
-        driver.get(channel_url)
-        channel_name = channel_name.replace(" ", "")
+    for run_id in range(repeat_count):
+        for channel_name, channel_url in channel_list:
+            driver = create_driver(headless=False)
+            driver.get(channel_url)
+            channel_name = channel_name.replace(" ", "")
 
-        WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
-        click_video_tab(driver, "Popular")
+            WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
+            click_video_tab(driver, "Popular")
 
-        try:
-            video_id_list, video_title_list = get_video_list(driver, channel_name, count_goal=2000, save_freq=5, scroll_pause_time=15)
-        except Exception as e:
-            print(traceback.format_exc())
-            continue
-        
-        driver.quit()
-        
+            try:
+                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000, save_freq=5, scroll_pause_time=5)
+            except Exception as e:
+                print(traceback.format_exc())
+                continue
+            
+            driver.quit()
+            
