@@ -102,7 +102,7 @@ if __name__ == "__main__":
     video_tab = "Latest" # tab names: Latest, Popular, Oldest
     count_goal = 500 # number of videos to crawl
     save_frequency = 3 # stop scrolling every x times to save data
-    scroll_pause_time = 2 # pause time between each scroll
+    scroll_pause_time = 2 # pause time between each scroll, in seconds
     output_filename = "output.csv"
     ###########################################################
 
