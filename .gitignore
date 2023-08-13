@@ -2,4 +2,4 @@
 /output
 /.ipynb_checkpoints
 *.csv
-!news_videos.csv
+!news_videos_Aug2023.csv
