@@ -1,2 +1,5 @@
 /.vscode
+/output
+/.ipynb_checkpoints
 *.csv
+!news_videos.csv
