@@ -15,6 +15,7 @@ def create_driver(headless, user_data_dir=""):
     options = webdriver.ChromeOptions()
     options.add_argument("--window-size=1540,1080")
     options.add_argument("--disable-extensions")
+    options.add_argument("--no-sandbox")
     if headless:
         options.add_argument("--headless=new")
 
@@ -68,8 +69,8 @@ def get_video_list(driver, run_id, channel_name, count_goal):
     
         current_height = get_scroll_height(driver)
 
-        scroll_pause_time = random.uniform(0.2, 20.0)
-        save_freq = random.randint(1, 8)
+        scroll_pause_time = random.uniform(5.0, 20.0)
+        save_freq = random.randint(1, 5)
         for _ in range(save_freq):
             scroll_to_bottom(driver)
             time.sleep(scroll_pause_time)
@@ -77,11 +78,11 @@ def get_video_list(driver, run_id, channel_name, count_goal):
         # check scroll difference. try again once, if not then break
         height_diff = current_height - get_scroll_height(driver)
         if height_diff == 0:
-            time.sleep(10)
+            time.sleep(5)
             scroll_to_bottom(driver)
-            time.sleep(10)
+            time.sleep(5)
             scroll_to_bottom(driver)
-            time.sleep(10)
+            time.sleep(5)
             
         video_elements = get_video_elements(driver)[len(video_id_list):]
         for elem in video_elements:
@@ -109,29 +110,25 @@ if __name__ == "__main__":
 
     repeat_count = 2
     channel_list = [
-        # ("ABC News", "https://www.youtube.com/@ABCNews/videos"),
-        ("WSJ", "https://www.youtube.com/@wsj/videos"),
-        ("Vox", "https://www.youtube.com/@Vox/videos"),
-        ("Washington Post", "https://www.youtube.com/@WashingtonPost/videos"),
-        ("Politico", "https://www.youtube.com/@POLITICO/videos"),
-        ("Fox News", "https://www.youtube.com/@FoxNews/videos"),
-        ("BBC News", "https://www.youtube.com/@BBCNews/videos"),
-        ("Bloomberg Television", "https://www.youtube.com/@markets/videos"),
-        ("Forbes", "https://www.youtube.com/@Forbes/videos"),
-        ("CNN", "https://www.youtube.com/@CNN/videos"),
-        ("CBS", "https://www.youtube.com/@CBSNews/videos"),
-        ("Daily Mail", "https://www.youtube.com/@dailymail/videos"),
-        ("Reuters", "https://www.youtube.com/@Reuters/videos"),
-        ("The Hill", "https://www.youtube.com/@thehill/videos"),
-        ("USA Today", "https://www.youtube.com/@USATODAY/videos"),
-        ("Washington Times", "https://www.youtube.com/@washingtontimes/videos"),
-        ("The Epoch Times", "https://www.youtube.com/@TheEpochTimesNews/videos"),
-        ("TIME", "https://www.youtube.com/@TIME/videos")
+        ("Numberphile", "https://www.youtube.com/@numberphile/videos"),
+        ("CGP Grey", "https://www.youtube.com/@CGPGrey/videos"),
+        ("Computerphile", "https://www.youtube.com/@Computerphile/videos"),
+        ("MindYourDecisions", "https://www.youtube.com/@MindYourDecisions/videos"),
+        ("3Blue1Brown", "https://www.youtube.com/@3blue1brown/videos"),
+        ("Standup Maths", "https://www.youtube.com/@standupmaths/videos"),
+        ("Steve Mould", "https://www.youtube.com/@SteveMould/videos"),
+        ("Veritasium", "https://www.youtube.com/@veritasium/videos"),
+        ("LockPickingLawyer", "https://www.youtube.com/@lockpickinglawyer/videos"),
+        ("TheBackyardScientist", "https://www.youtube.com/@TheBackyardScientist/videos"),
+        ("Code Bullet", "https://www.youtube.com/@CodeBullet/videos"),
+        ("The Action Lab ", "https://www.youtube.com/@TheActionLab/videos"),
+        ("TKOR", "https://www.youtube.com/@TheKingofRandom/videos"),
+        ("Boston Dynamics", "https://www.youtube.com/@BostonDynamics/videos"),
     ]
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
-            driver = create_driver(headless=False)
+            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
             driver.get(channel_url)
             channel_name = channel_name.replace(" ", "")
 
@@ -139,9 +136,13 @@ if __name__ == "__main__":
             click_video_tab(driver, "Popular")
 
             try:
-                video_id_list, video_title_list = get_video_list(driver, run_id, channel_name, count_goal=1000)
+                video_id_list, video_title_list = get_video_list(driver,
+                                                                 run_id,
+                                                                 channel_name,
+                                                                 count_goal=1000)
             except Exception as e:
                 print(traceback.format_exc())
+                driver.quit()
                 continue
             
             driver.quit()

@@ -1,5 +1,5 @@
 /.vscode
-/output
+/outputs*
 /.ipynb_checkpoints
 *.csv
-!news_videos_Aug2023.csv
+!news_videos_Aug132023.csv
