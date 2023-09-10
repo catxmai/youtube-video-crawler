@@ -45,7 +45,7 @@ def parse_video_from_element(video_element):
     video_title = video_title_link.get_attribute("title")
     video_href = video_title_link.get_attribute("href")
 
-    pattern = r"(?<=watch\?v=)\S*" 
+    pattern = r"(?<=watch\?v=).{11}" # capture anything 11-char after v=
     video_id = re.search(pattern, video_href)[0]
 
     return video_id, video_title

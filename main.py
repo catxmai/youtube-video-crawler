@@ -50,7 +50,7 @@ def parse_video_from_element(video_element):
     video_title = video_title_link.get_attribute("title")
     video_href = video_title_link.get_attribute("href")
 
-    pattern = r"(?<=watch\?v=)\S*" 
+    pattern = r"(?<=watch\?v=).{11}" 
     video_id = re.search(pattern, video_href)[0]
 
     return video_id, video_title
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
-            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
+            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare89")
             driver.get(channel_url)
             channel_name = channel_name.replace(" ", "")
 
