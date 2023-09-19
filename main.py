@@ -128,15 +128,15 @@ if __name__ == "__main__":
     repeat_count = 3
     f = open("news_channel_list.json", "r")
     channel_list = json.load(f)["channels"]
-    channels_to_run = ['MarketBeat','HarvardBusinessReview','Gallup','Militarycom','Justia','Ballotpedia','Pew','PRNewswire','TechSpot']
+    channels_to_run = ['MarketBeat','HarvardBusinessReview','Gallup','Militarycom','Justia','Pew','PRNewswire','TechSpot']
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
-            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
-            driver.get(channel_url)
             channel_name = channel_name.replace(" ", "")
 
             if channel_name in channels_to_run:
+                driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
+                driver.get(channel_url)
                 try:
                     WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
                     click_video_tab(driver, "Popular")
