@@ -50,20 +50,21 @@ def parse_video_from_element(video_element):
     video_title = video_title_link.get_attribute("title")
     video_href = video_title_link.get_attribute("href")
 
-    pattern = r"(?<=watch\?v=).{11}" 
+    pattern = r"(?<=watch\?v=).{11}" # capture anything 11-char after v=
     video_id = re.search(pattern, video_href)[0]
 
     return video_id, video_title
     
 
-def get_video_list(driver, run_id, channel_name, count_goal):
+def get_video_list(driver, run_id, channel_name, count_goal, output_dir):
 
     video_id_list, video_title_list = [], []
     current_count_on_page = len(get_video_elements(driver))
 
-    with open(f"output_{channel_name}_{run_id}.csv", 'w', encoding="utf-8") as f:
-        writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
-        writer.writerow(["video_id", "channel_name", "video_title"])
+    f = open(f"{output_dir}/output_{channel_name}_{run_id}.csv", 'w', encoding="utf-8")
+
+    writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
+    writer.writerow(["video_id", "channel_name", "video_title"])
 
     while (current_count_on_page < count_goal):
     
@@ -90,9 +91,8 @@ def get_video_list(driver, run_id, channel_name, count_goal):
             video_id_list.append(video_id)
             video_title_list.append(video_title)
 
-            with open(f"output_{channel_name}_{run_id}.csv", 'a', encoding="utf-8") as f:
-                writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
-                writer.writerow([video_id, channel_name, video_title])
+            writer = csv.writer(f, delimiter = ",", lineterminator = "\n")
+            writer.writerow([video_id, channel_name, video_title])
 
         current_count_on_page = len(get_video_elements(driver))
 
@@ -103,45 +103,58 @@ def get_video_list(driver, run_id, channel_name, count_goal):
             raise AssertionError("can't scroll more to bottom")
 
     return video_id_list, video_title_list
-    
+
+
+def handle_strange_redirect(driver, channel_name):
+
+    driver.get(f"https://www.youtube.com/results?search_query={channel_name}")
+    avatar = driver.find_element(By.CSS_SELECTOR, "#avatar-section > a")
+    driver.execute_script("arguments[0].click();", avatar)
+
+    time.sleep(2)
+    tab_bar = driver.find_element(By.CSS_SELECTOR, "#tabsContent")
+    tabs = tab_bar.find_elements(By.CSS_SELECTOR, "div.tab-title.style-scope.ytd-c4-tabbed-header-renderer")
+    for tab in tabs:
+        if tab.get_attribute("innerHTML").lower() == "videos":
+            driver.execute_script("arguments[0].click();", tab)
+            break
+
+    time.sleep(2)
 
 
 if __name__ == "__main__":
 
-    repeat_count = 2
+    repeat_count = 1
     channel_list = [
-        ("Numberphile", "https://www.youtube.com/@numberphile/videos"),
-        ("CGP Grey", "https://www.youtube.com/@CGPGrey/videos"),
-        ("Computerphile", "https://www.youtube.com/@Computerphile/videos"),
-        ("MindYourDecisions", "https://www.youtube.com/@MindYourDecisions/videos"),
-        ("3Blue1Brown", "https://www.youtube.com/@3blue1brown/videos"),
-        ("Standup Maths", "https://www.youtube.com/@standupmaths/videos"),
-        ("Steve Mould", "https://www.youtube.com/@SteveMould/videos"),
-        ("Veritasium", "https://www.youtube.com/@veritasium/videos"),
-        ("LockPickingLawyer", "https://www.youtube.com/@lockpickinglawyer/videos"),
-        ("TheBackyardScientist", "https://www.youtube.com/@TheBackyardScientist/videos"),
-        ("Code Bullet", "https://www.youtube.com/@CodeBullet/videos"),
-        ("The Action Lab ", "https://www.youtube.com/@TheActionLab/videos"),
-        ("TKOR", "https://www.youtube.com/@TheKingofRandom/videos"),
-        ("Boston Dynamics", "https://www.youtube.com/@BostonDynamics/videos"),
+        ["KPRC 2 Click2Houston","https://www.youtube.com/@KPRC2Click2Houston/videos"],
+        ["WDIV - ClickOnDetroit","https://www.youtube.com/@ClickOnDetroitLocal4WDIV/videos"],
+        ["KTLA 5","https://www.youtube.com/@KTLA5/videos"],
+        ["Tennessean","https://www.youtube.com/@TennesseanGannett/videos"],
     ]
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
-            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare89")
+            driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
             driver.get(channel_url)
             channel_name = channel_name.replace(" ", "")
 
-            WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
-            click_video_tab(driver, "Popular")
-
             try:
+                WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
+                
+            except:
+                handle_strange_redirect(driver, channel_name)
+                
+            try:
+                click_video_tab(driver, "Popular")
                 video_id_list, video_title_list = get_video_list(driver,
-                                                                 run_id,
-                                                                 channel_name,
-                                                                 count_goal=1000)
+                                                                run_id,
+                                                                channel_name,
+                                                                count_goal=100,
+                                                                output_dir="outputs_news")
             except Exception as e:
                 print(traceback.format_exc())
+                print(channel_name)
+                print(channel_url)
                 driver.quit()
                 continue
             

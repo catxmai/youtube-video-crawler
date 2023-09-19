@@ -1,0 +1,42 @@
+{
+    "channels":
+    [
+        {"ABC News": "https://www.youtube.com/@ABCNews/videos"},
+        {"WSJ": "https://www.youtube.com/@wsj/videos"},
+        {"Vox": "https://www.youtube.com/@Vox/videos"},
+        {"Washington Post": "https://www.youtube.com/@WashingtonPost/videos"},
+        {"Politico": "https://www.youtube.com/@POLITICO/videos"},
+        {"Fox News": "https://www.youtube.com/@FoxNews/videos"},
+        {"BBC News": "https://www.youtube.com/@BBCNews/videos"},
+        {"Bloomberg Television": "https://www.youtube.com/@markets/videos"},
+        {"Forbes": "https://www.youtube.com/@Forbes/videos"},
+        {"CNN": "https://www.youtube.com/@CNN/videos"},
+        {"CBS": "https://www.youtube.com/@CBSNews/videos"},
+        {"Daily Mail": "https://www.youtube.com/@dailymail/videos"},
+        {"Reuters": "https://www.youtube.com/@Reuters/videos"},
+        {"The Hill": "https://www.youtube.com/@thehill/videos"},
+        {"USA Today": "https://www.youtube.com/@USATODAY/videos"},
+        {"Washington Times": "https://www.youtube.com/@washingtontimes/videos"},
+        {"The Epoch Times": "https://www.youtube.com/@TheEpochTimesNews/videos"},
+        {"TIME": "https://www.youtube.com/@TIME/videos"},
+        {"Mass Live": "https://www.youtube.com/@MassLive/videos"},
+        {"The Weather Channel": "https://www.youtube.com/@TheWeatherChannel/videos"},
+        {"Business Insider": "https://www.youtube.com/@InsiderBusiness/videos"},
+        {"The Guardian": "https://www.youtube.com/@theGuardian/videos"},
+        {"ABC7": "https://www.youtube.com/@ABC7/videos"},
+        {"CBS Mornings": "https://www.youtube.com/@CBSMornings/videos"},
+        {"LA Times": "https://www.youtube.com/@latimes/videos"},
+        {"Associated Press": "https://www.youtube.com/@AssociatedPress/videos"},
+        {"C-SPAN": "https://www.youtube.com/@CSPAN/videos"},
+        {"East Idaho News": "https://www.youtube.com/@Eastidnews/videos"},
+        {"Breibart": "https://www.youtube.com/@breitbartnews92/videos"},
+        {"News 5 Cleveland": "https://www.youtube.com/@news5cleveland/videos"},
+        {"Fox Business": "https://www.youtube.com/@FoxBusiness/videos"},
+        {"News Week": "https://www.youtube.com/@NewsweekMag/videos"},
+        {"News Nation": "https://www.youtube.com/@NewsNation/videos"},
+        {"Forbes Breaking News": "https://www.youtube.com/@ForbesBreakingNews/videos"},
+        {"The Economist": "https://www.youtube.com/@TheEconomist/videos"}
+    ]
+}
+   
+    
