@@ -9,6 +9,7 @@ import re
 import csv
 import traceback
 import random
+import json
 
 def create_driver(headless, user_data_dir=""):
 
@@ -119,18 +120,15 @@ def handle_strange_redirect(driver, channel_name):
             driver.execute_script("arguments[0].click();", tab)
             break
 
-    time.sleep(2)
+    time.sleep(3)
 
 
 if __name__ == "__main__":
 
-    repeat_count = 1
-    channel_list = [
-        ["KPRC 2 Click2Houston","https://www.youtube.com/@KPRC2Click2Houston/videos"],
-        ["WDIV - ClickOnDetroit","https://www.youtube.com/@ClickOnDetroitLocal4WDIV/videos"],
-        ["KTLA 5","https://www.youtube.com/@KTLA5/videos"],
-        ["Tennessean","https://www.youtube.com/@TennesseanGannett/videos"],
-    ]
+    repeat_count = 3
+    f = open("news_channel_list.json", "r")
+    channel_list = json.load(f)["channels"]
+    channels_to_run = ['MarketBeat','HarvardBusinessReview','Gallup','Militarycom','Justia','Ballotpedia','Pew','PRNewswire','TechSpot']
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
@@ -138,25 +136,27 @@ if __name__ == "__main__":
             driver.get(channel_url)
             channel_name = channel_name.replace(" ", "")
 
-            try:
-                WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
+            if channel_name in channels_to_run:
+                try:
+                    WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
+                    click_video_tab(driver, "Popular")
+                    
+                except:
+                    handle_strange_redirect(driver, channel_name)
+                    
+                try:
+                    click_video_tab(driver, "Popular")
+                    video_id_list, video_title_list = get_video_list(driver,
+                                                                    run_id,
+                                                                    channel_name,
+                                                                    count_goal=100,
+                                                                    output_dir="outputs_news")
+                except Exception as e:
+                    print(traceback.format_exc())
+                    print(channel_name)
+                    print(channel_url)
+                    driver.quit()
+                    continue
                 
-            except:
-                handle_strange_redirect(driver, channel_name)
-                
-            try:
-                click_video_tab(driver, "Popular")
-                video_id_list, video_title_list = get_video_list(driver,
-                                                                run_id,
-                                                                channel_name,
-                                                                count_goal=100,
-                                                                output_dir="outputs_news")
-            except Exception as e:
-                print(traceback.format_exc())
-                print(channel_name)
-                print(channel_url)
                 driver.quit()
-                continue
-            
-            driver.quit()
             
