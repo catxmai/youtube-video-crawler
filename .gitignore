@@ -3,3 +3,4 @@
 /.ipynb_checkpoints
 *.csv
 !news_videos_Aug132023.csv
+*.exe

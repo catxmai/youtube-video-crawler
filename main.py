@@ -125,12 +125,13 @@ def handle_strange_redirect(driver, channel_name):
 
 if __name__ == "__main__":
 
-    repeat_count = 3
+    repeat_count = 10
     f = open("news_channel_list.json", "r")
     channel_list = json.load(f)["channels"]
-    channels_to_run = ['MarketBeat','HarvardBusinessReview','Gallup','Militarycom','Justia','Pew','PRNewswire','TechSpot']
+    channels_to_run = ['MarketBeat','HarvardBusinessReview','Gallup','Militarycom',"Ballotpedia",'Justia','Pew','PRNewswire','TechSpot']
 
-    for run_id in range(repeat_count):
+    for rid in range(repeat_count):
+        run_id = rid+3
         for channel_name, channel_url in channel_list:
             channel_name = channel_name.replace(" ", "")
 
