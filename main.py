@@ -1,44 +1,22 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait 
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import *
 
 import time
-import re
 import csv
 import traceback
 import random
 import json
 
-def create_driver(headless, user_data_dir=""):
-
-    options = webdriver.ChromeOptions()
-    options.add_argument("--window-size=1540,1080")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--no-sandbox")
-    if headless:
-        options.add_argument("--headless=new")
-
-    if user_data_dir:
-        options.add_argument("user-data-dir=" + user_data_dir)
-
-    driver = webdriver.Chrome(options = options)
-
-    return driver
+from utils import *
 
 def click_video_tab(driver, tab):
     # tab names: Latest, Popular, Oldest
 
     video_tab_selector = driver.find_element(By.CSS_SELECTOR, "iron-selector#chips")
     video_tab = video_tab_selector.find_element(By.CSS_SELECTOR, f"yt-formatted-string[title='{tab}']")
-    driver.execute_script("arguments[0].click();", video_tab)
-
-def scroll_to_bottom(driver):
-    driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
-
-def get_scroll_height(driver):
-    return driver.execute_script("return document.documentElement.scrollHeight") 
+    click(driver, video_tab)
 
 def get_video_elements(driver):
 
@@ -50,9 +28,7 @@ def parse_video_from_element(video_element):
     video_title_link = video_element.find_element(By.CSS_SELECTOR, "a#video-title-link")
     video_title = video_title_link.get_attribute("title")
     video_href = video_title_link.get_attribute("href")
-
-    pattern = r"(?<=watch\?v=).{11}" # capture anything 11-char after v=
-    video_id = re.search(pattern, video_href)[0]
+    video_id = parse_vid_id(video_href)
 
     return video_id, video_title
     
@@ -110,14 +86,14 @@ def handle_strange_redirect(driver, channel_name):
 
     driver.get(f"https://www.youtube.com/results?search_query={channel_name}")
     avatar = driver.find_element(By.CSS_SELECTOR, "#avatar-section > a")
-    driver.execute_script("arguments[0].click();", avatar)
+    click(driver, avatar)
 
     time.sleep(2)
     tab_bar = driver.find_element(By.CSS_SELECTOR, "#tabsContent")
     tabs = tab_bar.find_elements(By.CSS_SELECTOR, "div.tab-title.style-scope.ytd-c4-tabbed-header-renderer")
     for tab in tabs:
         if tab.get_attribute("innerHTML").lower() == "videos":
-            driver.execute_script("arguments[0].click();", tab)
+            click(driver, tab)
             break
 
     time.sleep(3)
