@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import *
 
 import re
+import datetime
 
 def create_driver(headless, user_data_dir="") -> webdriver.Chrome:
 
@@ -41,3 +42,18 @@ def get_scroll_height(driver):
 
 def click(driver, elem):
     driver.execute_script("arguments[0].click();", elem)
+
+
+def get_timestamp() -> str:
+
+    # Generates an id for scraping run based on system time
+    d = datetime.datetime.now()
+    test_str = '{date:%m%d_%H%M}'.format(date = d)
+
+    return test_str
+
+def driver_wait(driver, wait_time, by_attr, element_string):
+
+    WebDriverWait(driver, wait_time).until(EC.presence_of_element_located(
+            (by_attr, element_string)
+    ))

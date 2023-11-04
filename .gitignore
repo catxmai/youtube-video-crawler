@@ -1,6 +1,8 @@
 /.vscode
 /outputs*
 /.ipynb_checkpoints
+/__pycache__
+
 *.csv
 !news_videos_Aug132023.csv
 *.exe
