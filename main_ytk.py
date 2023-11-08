@@ -3,7 +3,9 @@ from utils import *
 import time
 import pandas as pd
 import os
+import csv
 
+from collections import deque
 
 def get_tabs(driver) -> list:
 
@@ -25,7 +27,7 @@ def parse_video_element(video_element) -> tuple:
     title = vid_elem.get_attribute("title")
     vid_id = parse_vid_id(vid_elem.get_attribute("href"))
 
-    return title, vid_id
+    return vid_id, title
 
 
 def parse_playlist_link(playlist_element) -> str:
@@ -33,26 +35,34 @@ def parse_playlist_link(playlist_element) -> str:
     playlist_link = playlist_element.find_element(By.CSS_SELECTOR, "#playlist-link").get_attribute("href")
     return playlist_link
 
-def get_videos_from_playlist(playlist_link) -> tuple:
 
-    titles, ids = [], []
+def crawl_recommendations(driver, url) -> tuple:
+
+    # return watch next videos on a particular video/playlist page
 
     time.sleep(2)
-    driver.get(playlist_link)
-    time.sleep(2)
+    driver.get(url)
+    time.sleep(5)
 
-    playlist_videos = driver.find_elements(By.CSS_SELECTOR, "#related.style-scope.ytk-two-column-watch-next-results-renderer > ytk-compact-video-renderer")
+    ids, titles = [], []
+
+    playlist_videos = driver.find_elements(
+        By.CSS_SELECTOR,
+        "#related.style-scope.ytk-two-column-watch-next-results-renderer > ytk-compact-video-renderer"
+    )
     for vid in playlist_videos:
-        title, vid_id = parse_video_element(vid)
-        titles.append(title)
+        vid_id, title = parse_video_element(vid)
         ids.append(vid_id)
+        titles.append(title)
 
-    return titles, ids
+    return ids, titles
 
 
-def crawl_ytk(driver) -> pd.DataFrame:
 
-    titles, ids, cates = [], [], []
+def _crawl_ytk(driver) -> pd.DataFrame:
+
+    ids, titles = [], []
+    # cates =  []
     found_playlists = []
 
     tabs = get_tabs(driver)
@@ -65,17 +75,17 @@ def crawl_ytk(driver) -> pd.DataFrame:
         found_playlists.extend(playlists)
 
         for video in videos:
-            title, id = parse_video_element(video)
-            titles.append(title)
+            id, title = parse_video_element(video)
             ids.append(id)
+            titles.append(title)
             # cates.append(tab_name)
 
     playlist_links = [parse_playlist_link(pl_elem) for pl_elem in found_playlists]
-    playlist_links = list(set(playlist_links))
+    playlist_links = dedupe(playlist_links)
     for link in playlist_links:
-        ptitles, pids = get_videos_from_playlist(link)
-        titles.extend(ptitles)
+        pids, ptitles = crawl_recommendations(driver, link)
         ids.extend(pids)
+        titles.extend(ptitles)
 
     df = pd.DataFrame(
         {
@@ -86,6 +96,71 @@ def crawl_ytk(driver) -> pd.DataFrame:
     )
     return df
 
+
+def crawl_from_homepage(driver):
+
+    driver.get("https://www.youtubekids.com/")
+    driver_wait(driver, 45, By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content")
+
+    timestamp = get_timestamp()
+    df = _crawl_ytk(driver)
+
+    df.drop_duplicates(subset=['video_id'], inplace=True)
+    df.reset_index(inplace=True, drop=True)
+    df.to_csv(f"output_ytk/ytk_home_{timestamp}.csv", index=False)
+
+
+def crawl_from_videos(driver, video_id_list, branching=False, max_result_count=100) -> list:
+
+    # BFS from video_list. Search more from results with branching=True
+
+    timestamp = get_timestamp()
+    output_file = open(f"output_ytk/ytk_recs_{timestamp}.csv", "w", encoding="utf-8")
+    output_writer = csv.writer(output_file,
+								delimiter = ",",
+								quotechar = '"',
+								quoting = csv.QUOTE_MINIMAL,
+								lineterminator = "\n")
+    
+    unique_id_list = dedupe(video_id_list)
+    already_seen = set()
+    to_crawl = deque()
+    all_result_ids = set()
+    current_result_count = 0
+
+    # initialize to_crawl
+    for video_id in unique_id_list:
+        to_crawl.append(video_id)
+
+    output_writer.writerow(['video_id', 'video_title'])
+
+    while to_crawl and current_result_count < max_result_count:
+        video_id = to_crawl.popleft()
+
+        if video_id not in already_seen:
+            already_seen.add(video_id)
+
+            result_ids, result_titles = crawl_recommendations(driver, urlk(video_id))
+            for video_result in zip(result_ids, result_titles):
+                result_id, _ = video_result
+                if result_id not in all_result_ids:
+                    output_writer.writerow(video_result)
+                    all_result_ids.add(result_id)
+                    current_result_count += 1
+
+                    # force write to disk. relatively expensive but data/logs is more important
+                    output_file.flush()
+                    os.fsync(output_file)
+
+            if branching and current_result_count < max_result_count:
+                for video_id in result_ids:
+                    if video_id not in already_seen:
+                        to_crawl.append(video_id)
+
+    output_file.close()
+    return list(all_result_ids)
+
+
 if __name__ == "__main__":
 
     dirs = ['output', 'output_ytk']
@@ -94,12 +169,27 @@ if __name__ == "__main__":
             os.makedirs(dir)
 
     driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
-    driver.get("https://www.youtubekids.com/")
-    driver_wait(driver, 45, By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content")
 
-    timestamp = get_timestamp()
-    df = crawl_ytk(driver)
+    kid_id_list = [
+        'PT6tCNLiN3g',
+        '0uSj2AIQ6YU',
+        'JzclTA8PmO4',
+        '49a1dQiSJcE',
+        '3YcSsQkJrl8',
+        'E8BCoYnFUFw',
+        'amaVIbxuAHA',
+        'GbgyDPFeLRA',
+        'vLP95DwlD9E',
+        'HUyUUyeH9Wk',
+        'kx8_wF9HOX8',
+    ]
 
-    df.drop_duplicates(subset=['video_id'], inplace=True)
-    df.reset_index(inplace=True, drop=True)
-    df.to_csv(f"output_ytk/{timestamp}.csv", index=False)
+    start_time = time.time()
+    result = crawl_from_videos(driver,
+                               kid_id_list,
+                               branching=True,
+                               max_result_count=100)
+    print(len(result))
+    duration = time.time() - start_time
+    print(f"Finished in {duration}s")
+    
