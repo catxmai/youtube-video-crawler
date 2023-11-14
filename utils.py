@@ -59,7 +59,7 @@ def parse_vid_id(href) -> str:
 def scroll_to_bottom(driver):
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
 
-def get_scroll_height(driver):
+def get_scroll_height(driver) -> int:
     return driver.execute_script("return document.documentElement.scrollHeight") 
 
 def click(driver, elem):
@@ -75,6 +75,8 @@ def get_timestamp() -> str:
     return test_str
 
 def driver_wait(driver, wait_time, element_tuple):
+
+    # throws selenium.common.exceptions.TimeoutException
 
     WebDriverWait(driver, wait_time).until(
         EC.presence_of_element_located(element_tuple)

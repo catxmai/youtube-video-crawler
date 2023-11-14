@@ -100,9 +100,7 @@ def _crawl_ytk(driver) -> pd.DataFrame:
 def crawl_from_homepage(driver) -> pd.DataFrame:
 
     driver.get("https://www.youtubekids.com/")
-    driver_wait(driver,
-                45,
-                (By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content"))
+    driver_wait(driver, 50, (By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content"))
 
     timestamp = get_timestamp()
     df = _crawl_ytk(driver)
