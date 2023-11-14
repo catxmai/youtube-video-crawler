@@ -74,8 +74,8 @@ def get_timestamp() -> str:
 
     return test_str
 
-def driver_wait(driver, wait_time, by_attr, element_string):
+def driver_wait(driver, wait_time, element_tuple):
 
-    WebDriverWait(driver, wait_time).until(EC.presence_of_element_located(
-            (by_attr, element_string)
-    ))
+    WebDriverWait(driver, wait_time).until(
+        EC.presence_of_element_located(element_tuple)
+    )

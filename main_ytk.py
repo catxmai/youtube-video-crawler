@@ -40,9 +40,9 @@ def crawl_recommendations(driver, url) -> tuple:
 
     # return watch next videos on a particular video/playlist page
 
-    time.sleep(2)
+    time.sleep(1)
     driver.get(url)
-    time.sleep(5)
+    driver_wait(driver, 5, (By.CSS_SELECTOR, "#related.style-scope"))
 
     ids, titles = [], []
 
@@ -97,10 +97,12 @@ def _crawl_ytk(driver) -> pd.DataFrame:
     return df
 
 
-def crawl_from_homepage(driver):
+def crawl_from_homepage(driver) -> pd.DataFrame:
 
     driver.get("https://www.youtubekids.com/")
-    driver_wait(driver, 45, By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content")
+    driver_wait(driver,
+                45,
+                (By.CSS_SELECTOR, "#page-root > ytk-kids-home-screen-renderer > #content"))
 
     timestamp = get_timestamp()
     df = _crawl_ytk(driver)
@@ -108,6 +110,8 @@ def crawl_from_homepage(driver):
     df.drop_duplicates(subset=['video_id'], inplace=True)
     df.reset_index(inplace=True, drop=True)
     df.to_csv(f"output_ytk/ytk_home_{timestamp}.csv", index=False)
+
+    return df
 
 
 def crawl_from_videos(driver, video_id_list, branching=False, max_result_count=100) -> list:
@@ -184,12 +188,28 @@ if __name__ == "__main__":
         'kx8_wF9HOX8',
     ]
 
+    non_kid_id_list = [
+        '0xNmWaumkn0',
+        'E-aEGXSVWgA',
+        'nxUOVa_pr04',
+        'VWHTlq5Fcr8',
+        'NjdwxFH6S10',
+        'o_OrXVbEcwo',
+        'PNqKqlYBK90',
+        '8s8kK7p8ues',
+        'LMrx9igQLHc',
+        'GMfCbTCC3_c',
+    ]
+
     start_time = time.time()
     result = crawl_from_videos(driver,
-                               kid_id_list,
+                               non_kid_id_list,
                                branching=True,
-                               max_result_count=100)
+                               max_result_count=5000)
+    # result = crawl_from_homepage(driver)
     print(len(result))
     duration = time.time() - start_time
     print(f"Finished in {duration}s")
+
+
     
