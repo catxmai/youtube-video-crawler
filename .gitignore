@@ -1,7 +1,8 @@
 /.vscode
-/outputs*
+/output*
 /.ipynb_checkpoints
 /__pycache__
 
-*.csv
 *.exe
+
+keys.py
