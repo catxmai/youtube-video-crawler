@@ -6,3 +6,5 @@
 *.exe
 
 keys.py
+
+/mbfc/*.json
