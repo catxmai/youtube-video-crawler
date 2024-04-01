@@ -13,7 +13,7 @@ def dedupe(arr) -> list:
     # better way to remove duplicates? since this way order is lost
     return list(set(arr))
 
-def urlk(youtube_video_id) -> str:
+def urlk(youtube_video_id:str) -> str:
 
     youtube_video_id = youtube_video_id.strip()
     assert(len(youtube_video_id) == 11)
@@ -21,7 +21,7 @@ def urlk(youtube_video_id) -> str:
     return "https://www.youtubekids.com/watch?v=" + youtube_video_id
 
 
-def url(youtube_video_id) -> str:
+def url(youtube_video_id:str) -> str:
 
     youtube_video_id = youtube_video_id.strip()
     assert(len(youtube_video_id) == 11)
@@ -29,7 +29,25 @@ def url(youtube_video_id) -> str:
     return "https://www.youtube.com/watch?v=" + youtube_video_id
 
 
-def create_driver(headless, user_data_dir="") -> webdriver.Chrome:
+digits = {
+    'k': 3,
+    'm': 6,
+    'b': 9
+}
+def str_to_num(num_str:str) -> int:
+    if num_str[-1].lower() in digits:
+        num, magnitude = num_str[:-1], num_str[-1]
+        ret_val = float(num) * 10 ** (digits[magnitude])
+        return int(ret_val)
+    else:
+        try:
+            ret_val = int(num_str)
+            return ret_val
+        except:
+            raise TypeError('bad arg')
+
+
+def create_driver(headless:bool, user_data_dir="") -> webdriver.Chrome:
 
     options = webdriver.ChromeOptions()
     options.add_argument("--window-size=1540,1080")

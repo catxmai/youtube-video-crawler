@@ -1,0 +1,17 @@
+{
+    "channels":
+    [
+        ["9 News Australia", "https://www.youtube.com/user/9NEWSAUSTRALIA/videos"],
+        ["ABC News Australia", "https://www.youtube.com/@abcnewsaustralia/videos"],
+        ["Aeon", "https://www.youtube.com/@AeonVideo/videos"],
+        ["AustralianAssociatedPress", "https://www.youtube.com/@AustralianAssociatedPress/videos"],
+        ["IndependentAus", "https://www.youtube.com/@IndependentAus/videos"],
+        ["Channel 9 Australia", "https://www.youtube.com/@channel9/videos"],
+        ["Special Broadcasting Service (SBS)", "https://www.youtube.com/@SBSOnDemand/videos"],
+        ["SMH and The Age", "https://www.youtube.com/@smhtheage/videos"],
+        ["The Conversation Australia", "https://www.youtube.com/@ConversationEDU/videos"],
+        ["Courier Mail", "https://www.youtube.com/@couriermail3655/videos"],
+        ["West Australian", "https://www.youtube.com/@TheWestAustralian/videos"],
+        ["The LowyInstitute", "https://www.youtube.com/@LowyInstitute/videos"]
+    ]
+}
