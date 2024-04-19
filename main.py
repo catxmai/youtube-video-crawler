@@ -114,10 +114,10 @@ def handle_strange_redirect(driver, channel_name):
 if __name__ == "__main__":
 
     repeat_count = 5
-    f = open("seed_channel_list/usa_news_channel_list.json", "r")
-    channel_list = json.load(f)["channels"][2:]
+    f = open("seed_channel_list/irl_news_channel_list.json", "r")
+    channel_list = json.load(f)["channels"][1:]
 
-    for run_id in range(1, repeat_count):
+    for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
             channel_name = channel_name.replace(" ", "")
 
@@ -135,8 +135,8 @@ if __name__ == "__main__":
                 video_id_list, video_title_list = get_video_list(driver,
                                                                 run_id,
                                                                 channel_name,
-                                                                count_goal=300,
-                                                                output_dir="outputs_usa_news")
+                                                                count_goal=1000,
+                                                                output_dir="outputs_irl_news")
             except Exception as e:
                 print(traceback.format_exc())
                 print(channel_name)
