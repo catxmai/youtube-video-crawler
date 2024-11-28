@@ -21,7 +21,9 @@ def click_video_tab(driver, tab):
 
 def get_video_elements(driver):
 
-    videos = driver.find_elements(By.CSS_SELECTOR, "#contents > ytd-rich-grid-row")
+    videos = driver.find_elements(By.CSS_SELECTOR, "#contents > ytd-rich-item-renderer")
+    if len(videos) < 1:
+        raise RuntimeError('no videos found')
     return videos
 
 def parse_video_from_element(video_element):
@@ -115,7 +117,7 @@ if __name__ == "__main__":
 
     repeat_count = 5
     f = open("seed_channel_list/irl_news_channel_list.json", "r")
-    channel_list = json.load(f)["channels"][1:]
+    channel_list = json.load(f)["channels"]
 
     for run_id in range(repeat_count):
         for channel_name, channel_url in channel_list:
@@ -123,6 +125,8 @@ if __name__ == "__main__":
 
             driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
             driver.get(channel_url)
+            # time.sleep(10000)
+
             try:
                 WebDriverWait(driver, 2).until(EC.presence_of_element_located(('id', 'contents')))
                 click_video_tab(driver, "Popular")
@@ -133,9 +137,9 @@ if __name__ == "__main__":
             try:
                 click_video_tab(driver, "Popular")
                 video_id_list, video_title_list = get_video_list(driver,
-                                                                run_id,
+                                                                str(run_id)+"_test",
                                                                 channel_name,
-                                                                count_goal=1000,
+                                                                count_goal=60,
                                                                 output_dir="outputs_irl_news")
             except Exception as e:
                 print(traceback.format_exc())

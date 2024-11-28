@@ -6,6 +6,12 @@ from selenium.common.exceptions import *
 
 import re
 import datetime
+import urllib.request
+import json
+import os
+
+from io import BytesIO
+import zipfile
 
 
 def dedupe(arr) -> list:
@@ -28,7 +34,7 @@ def url(youtube_video_id:str) -> str:
 
     return "https://www.youtube.com/watch?v=" + youtube_video_id
 
-
+# thousand, million, billion mapping
 digits = {
     'k': 3,
     'm': 6,
@@ -52,16 +58,62 @@ def create_driver(headless:bool, user_data_dir="") -> webdriver.Chrome:
     options = webdriver.ChromeOptions()
     options.add_argument("--window-size=1540,1080")
     options.add_argument("--disable-extensions")
-    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+
     if headless:
         options.add_argument("--headless=new")
 
     if user_data_dir:
         options.add_argument("user-data-dir=" + user_data_dir)
 
-    driver = webdriver.Chrome(options = options)
+    try:
+        driver = webdriver.Chrome(options=options)
+    except SessionNotCreatedException as e:
+        major_version = parse_driver_version_from_error(e.msg)
+
+        if major_version == 0:
+            raise Exception('cannot find major version')
+        
+        install_chromedriver(major_version=major_version)
+        driver = webdriver.Chrome(options=options)
 
     return driver
+
+
+def parse_driver_version_from_error(msg:str) -> str:
+    # parsing driver version from SessionNotCreated error
+    msg = msg.lower()
+
+    if "this version of chromedriver only supports" not in msg:
+        return 0
+    
+    pattern = r"(?<=current browser version is ).+(?= with binary path)"
+    match = re.search(pattern, msg)
+    if not match:
+        return 0
+    major_version = match[0].split(".")[0] # version: 130.0.6723.69, major version: 130
+
+    return major_version
+
+def install_chromedriver(major_version:str):
+    
+    milestone_url = "https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone-with-downloads.json"
+    # get matched download url
+    with urllib.request.urlopen(milestone_url) as url:
+        data = json.load(url)
+        milestone = data['milestones'].get(major_version)
+        dl_url = milestone['downloads']['chromedriver'][3]['url'] # download link for win32
+
+    # download the binary
+    response = urllib.request.urlopen(dl_url)
+    zip = BytesIO(response.read())
+
+    with zipfile.ZipFile(zip) as zip_file:
+        for zip_info in zip_file.infolist():
+            if zip_info.filename.endswith("chromedriver.exe"):
+                zip_info.filename = os.path.basename(zip_info.filename)
+                zip_file.extract(zip_info)
+                break
 
 def parse_vid_id(href) -> str:
 
