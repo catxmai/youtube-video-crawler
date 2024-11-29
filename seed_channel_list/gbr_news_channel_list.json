@@ -1,0 +1,33 @@
+{
+    "channels":
+    [
+        ["The Spectator", "https://www.youtube.com/@SpectatorTV/videos"],
+        ["Thomas Reuters Foundation", "https://www.youtube.com/@Context_news/videos"],
+        ["The Northern Echo", "https://www.youtube.com/@thenorthernecho3247/videos"],
+        ["Janes", "https://www.youtube.com/@Janes-intel/videos"],
+        ["Amnesty", "https://www.youtube.com/@amnesty/videos"],
+        ["ITV News", "https://www.youtube.com/@ITVNews/videos"],
+        ["Wales Online", "https://www.youtube.com/@walesonline/videos"],
+        ["Conservative Home", "https://www.youtube.com/@ConservativeHome/videos"],
+        ["The New Arab", "https://www.youtube.com/@NewArab/videos"],
+        ["Economics Help", "https://www.youtube.com/@economicshelp/videoss"],
+        ["Middle East Eye", "https://www.youtube.com/@MiddleEastEye/videos"],
+        ["VideoVox Economics", "https://www.youtube.com/@VOXViewsCEPR/videos"],
+        ["London Evening Standard", "https://www.youtube.com/@EveningStandard/videos"],
+        ["Full Fact UK", "https://www.youtube.com/@FullFactUK/videos"],
+        ["HITC Sevens", "https://www.youtube.com/@HITCSevens/videos"],
+        ["Byline TV", "https://www.youtube.com/@BylineTV/videos"],
+        ["Channel 4 News UK", "https://www.youtube.com/@Channel4News/videos"],
+        ["Leicester Mercury", "https://www.youtube.com/@LeicestermercuryCoUk/videos"],
+        ["WhatCulture", "https://www.youtube.com/@whatculture/videos"],
+        ["Chatham House", "https://www.youtube.com/@ChathamHouse10/videos"],
+        ["The Times and The Sunday Times", "https://www.youtube.com/@TheTimes/videos"],
+        ["Declassified UK", "https://www.youtube.com/@DeclassifiedUK/videos"],
+        ["UnHerd", "https://www.youtube.com/@UnHerd/videos"],
+        ["The Economist", "https://www.youtube.com/@TheEconomist"],
+        ["Sky News UK", "https://www.youtube.com/@SkyNews/videos"],
+        ["JOE CO UK", "https://www.youtube.com/@JOE_co_uk/videos"],
+        ["Institute for Government", "https://www.youtube.com/@instituteforgov/videos"],
+        ["Financial Times", "https://www.youtube.com/@FinancialTimes/videos"]
+    ]
+}
