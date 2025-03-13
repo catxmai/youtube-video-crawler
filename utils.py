@@ -77,7 +77,7 @@ def create_driver(headless:bool, user_data_dir="") -> webdriver.Chrome:
         major_version = parse_driver_version_from_error(e.msg)
 
         if major_version == 0:
-            raise Exception('cannot find major version')
+            raise Exception('cannot find major version from error msg')
         
         install_chromedriver(major_version=major_version)
         driver = webdriver.Chrome(options=options)
@@ -166,7 +166,7 @@ def get_timestamp() -> str:
 
     # Generates an id for scraping run based on system time
     d = datetime.datetime.now()
-    test_str = '{date:%m%d_%H%M}'.format(date = d)
+    test_str = '{date:%m%d%Y_%H%M}'.format(date = d)
 
     return test_str
 
