@@ -1,5 +1,7 @@
 from utils import *
 
+import random
+
 def watch_video(driver, duration=30):
 
     play_video(driver)
@@ -144,9 +146,9 @@ def crawl_recommendations(driver, url, target_count=50) -> dict:
     video_title = get_video_title(driver)
 
     output = {
-        "seed_id": parse_video_id(url),
-        "seed_url": url,
-        "seed_title": video_title,
+        "video_id": parse_video_id(url),
+        "video_url": url,
+        "video_title": video_title,
         "is_for_kids": is_for_kids(driver),
         "side_ad": {
             "side_ad_img": side_ad_img,
@@ -168,19 +170,26 @@ if __name__ == "__main__":
 
     # driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
 
+    is_random_seed = True
+    random.seed(23)
+
     df = pd.read_csv("video_list/ytk_nokids_apr24.csv")
-    video_urls = df["video_url"]
+    video_urls = df["video_url"].tolist()
+
+    if is_random_seed:
+        random.shuffle(video_urls)
+
 
     for url in video_urls:
 
         driver = create_driver(headless=False)
 
-        seed_url = url
-        seed_id = parse_video_id(seed_url)
+        curr_video_url = url
+        curr_video_id = parse_video_id(curr_video_url)
 
         timeid = get_timestamp()
 
-        output_dir = f"output_recs/output_{seed_id}_{timeid}"
+        output_dir = f"output_recs/output_{curr_video_id}_{timeid}"
         dirs = ['output_recs', output_dir]
         for dir in dirs:
             if not os.path.exists(dir):
@@ -188,34 +197,43 @@ if __name__ == "__main__":
 
         visited_urls = []
         
-        next_seed_url = seed_url
-        prev_seed_url = seed_url
+        next_video_url = curr_video_url
+        prev_video_url = curr_video_url
 
         for epoch in range(20):
             
             time.sleep(2)
-            driver.get(next_seed_url)
+            driver.get(next_video_url)
             time.sleep(5)
 
-            visited_urls.append(next_seed_url)
+            visited_urls.append(next_video_url)
 
-            # watch_video(driver, duration=5)
-            output = crawl_recommendations(driver, next_seed_url, target_count=10)
-            output["prev_seed_url"] = prev_seed_url
+            watch_video(driver, duration=10)
+            output = crawl_recommendations(driver, next_video_url, target_count=20)
+            output["prev_video_url"] = prev_video_url
 
-            for i in range(len(output["videos"])):
-                next_seed_url = output['videos'][i]['url']
-                next_seed_title = output['videos'][i]['title']
+            next_video_candidates = output['videos']
+            assert(len(next_video_candidates) > 0)
 
-                if next_seed_url not in visited_urls:
+            if is_random_seed:
+                random.shuffle(next_video_candidates)
+
+            for i in range(len(next_video_candidates)):
+                next_video_url = next_video_candidates[i]['url']
+                next_video_title = next_video_candidates[i]['title']
+
+                if next_video_url not in visited_urls:
                     break
             
-            output["next_seed_url"] = next_seed_url
-            output["next_seed_title"] = next_seed_title
-            prev_seed_url = output["seed_url"]
-            prev_seed_id = parse_video_id(prev_seed_url)
+            output["next_video_url"] = next_video_url
+            output["next_video_title"] = next_video_title
+            prev_video_url = output["video_url"]
+            prev_video_id = parse_video_id(prev_video_url)
 
-            with open(f"{output_dir}/epoch_{epoch}_{prev_seed_id}.json", "w", encoding="utf-8") as json_file:
+            scroll_to_top(driver)
+            driver.save_screenshot(f"{output_dir}/epoch_{epoch}_{prev_video_id}_screenshot.png")
+
+            with open(f"{output_dir}/epoch_{epoch}_{prev_video_id}.json", "w", encoding="utf-8") as json_file:
                 json.dump(output, json_file, indent=4) 
 
         driver.quit()
