@@ -23,24 +23,25 @@ def crawl_recommendations(driver, url, target_count=50) -> dict:
 
     def get_upnext_lists(driver, target_count) -> tuple:
 
-        parent_css = "#contents.style-scope.ytd-item-section-renderer"
+        parent_css = "#items.style-scope.ytd-watch-next-secondary-results-renderer"
         playlists = driver.find_elements(By.CSS_SELECTOR, f"{parent_css} yt-lockup-view-model")
 
         videos = []
-        ind = 1
+        i = 1
         while len(videos) < target_count:
 
-            if ind % 5 == 0:
+            if i % 5 == 0:
                 # each video is 168px
                 driver.execute_script("window.scrollBy(0, 500);")
                 time.sleep(4)
 
             try:
                
-                video_selector = f"{parent_css} ytd-compact-video-renderer:nth-of-type({ind})"
+                video_selector = f"{parent_css} ytd-compact-video-renderer:nth-of-type({i})"
                 video_element = driver.find_element(By.CSS_SELECTOR, video_selector)
                 videos.append(video_element)  
             except NoSuchElementException:
+                print('no vid')
                 break 
 
             i += 1
