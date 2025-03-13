@@ -9,6 +9,11 @@ import datetime
 import urllib.request
 import json
 import os
+import time
+import pandas as pd
+
+from collections import deque
+
 
 from io import BytesIO
 import zipfile
@@ -115,7 +120,7 @@ def install_chromedriver(major_version:str):
                 zip_file.extract(zip_info)
                 break
 
-def parse_vid_id(href) -> str:
+def parse_video_id(href) -> str:
 
     pattern = r"(?<=watch\?v=).{11}" # capture anything 11-char after v=
     video_id = re.search(pattern, href)
@@ -125,14 +130,35 @@ def parse_vid_id(href) -> str:
 
     return None
 
+def parse_reel_id(href) -> str:
+
+    pattern = r"(?<=shorts\/).{11}" # capture anything 11-char after v=
+    reel_id = re.search(pattern, href)
+
+    if reel_id:
+        return reel_id[0]
+
+    return None
+
+def get_video_title(driver):
+    try:
+        title = driver.find_element(By.CSS_SELECTOR, "div#above-the-fold h1 yt-formatted-string").get_attribute("title")
+        return title
+    except (TypeError, KeyError) as e:
+        return None
+
 
 def scroll_to_bottom(driver):
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
 
+def scroll_to_top(driver):
+    driver.execute_script("window.scrollTo(0, 0);")
+
+
 def get_scroll_height(driver) -> int:
     return driver.execute_script("return document.documentElement.scrollHeight") 
 
-def click(driver, elem):
+def jsclick(driver, elem):
     driver.execute_script("arguments[0].click();", elem)
 
 
@@ -151,3 +177,145 @@ def driver_wait(driver, wait_time, element_tuple):
     WebDriverWait(driver, wait_time).until(
         EC.presence_of_element_located(element_tuple)
     )
+
+
+def is_for_kids(driver):
+
+    try:
+        script_elem = driver.find_element(By.CSS_SELECTOR, "div#watch7-content + script")
+        script_text = script_elem.get_attribute("innerHTML")
+        if 'for kid' in script_text:
+            return True
+        
+        ytk_ad = driver.find_element(By.CSS_SELECTOR, "#teaser-carousel")
+        ad_link = ytk_ad.find_element(By.CSS_SELECTOR, "a").get_attribute("href").strip()
+        if "ytkids" in ad_link:
+            return True
+        
+        ad_text = ytk_ad.find_element(By.CSS_SELECTOR, ".YtCarouselTitleViewModelTitle").get_attribute("innerHTML").lower()
+        if "youtube kids" in ad_text:
+            return True
+        
+    except NoSuchElementException:
+        pass
+
+    return False
+
+
+def get_side_ad_site(driver):
+
+    # site is usually the link to advertiser's site, but sometimes it's just the site name
+
+    try:
+        side_ad_container = driver.find_element(By.CSS_SELECTOR, ".ytwAdDetailsLineViewModelHostIsClickableAdComponent span")
+        site = side_ad_container.get_attribute("innerHTML").strip()
+        return site
+
+    except NoSuchElementException:
+        return None
+
+def get_side_ad_text_and_link(driver):
+    title, body = "", ""
+    href = None
+
+    try:
+        title_box = driver.find_elements(By.CSS_SELECTOR, ".ytwFeedAdMetadataViewModelHostMetadata span a a")
+        title = title_box[0].get_attribute("innerHTML").strip()
+        href = title_box[0].get_attribute('href')
+    except IndexError:
+        pass
+
+    try:
+        body_container = driver.find_elements(By.CSS_SELECTOR, ".ytwFeedAdMetadataViewModelHostMetadata span a a")
+        body = body_container[1].get_attribute("innerHTML").strip()
+    except IndexError:
+        pass
+
+    text = title + body
+    text = text if len(text) > 0 else None
+    return text, href
+
+def get_side_ad_text(driver):
+    return get_side_ad_text_and_link(driver)[0]
+
+def get_side_ad_link(driver):
+    return get_side_ad_text_and_link(driver)[1]
+
+def get_side_ad_img(driver):
+
+    img_src = None
+
+    try:
+        img_src = driver.find_element(
+            By.CSS_SELECTOR,
+            ".ytwSquareImageLayoutViewModelHostImage .ytwAdImageViewModelHostImageContainer img"
+        ).get_attribute("src")
+    except NoSuchElementException:
+        pass
+
+    return img_src
+
+
+def pause_video(driver: webdriver.Chrome):
+
+    play_button = driver.find_element(
+        By.CSS_SELECTOR, "button.ytp-play-button.ytp-button"
+    )
+    if play_button:
+        status = play_button.get_attribute("data-title-no-tooltip")
+
+        if status == "Pause":
+            try:
+                play_button.send_keys("k")
+            except ElementNotInteractableException:
+                pass
+
+
+
+def play_video(driver: webdriver.Chrome):
+
+    try:
+        driver_wait(driver, 5, (By.CSS_SELECTOR, "button.ytp-play-button.ytp-button"))
+    except:
+        raise NoSuchElementException("no play button")
+
+    play_button = driver.find_element(
+        By.CSS_SELECTOR, "button.ytp-play-button.ytp-button"
+    )
+    status = play_button.get_attribute("data-title-no-tooltip")
+
+    if status == "Play":
+        play_button.send_keys("k")
+
+
+
+def skip_ad(driver: webdriver.Chrome):
+    # assuming driver has ad
+    skip_ad_button = (By.CSS_SELECTOR, 'button.ytp-skip-ad-button')
+
+    def click_skip_button(driver):
+        skip_button = driver.find_element(skip_ad_button[0], skip_ad_button[1])
+        # jsclick(driver, skip_button)
+        skip_button.click()
+
+    try:
+        play_video(driver)
+        time.sleep(5)
+        pause_video(driver)
+
+        time.sleep(1)
+        click_skip_button(driver)
+
+    except (NoSuchElementException, ElementNotInteractableException, TimeoutException) as e:
+        try:
+            play_video(driver)
+            driver_wait(driver, 6, skip_ad_button)
+            click_skip_button(driver)
+        except (NoSuchElementException, TimeoutException, ElementNotInteractableException) as e:
+            pass
+
+            
+
+
+
+

@@ -25,7 +25,7 @@ def parse_video_element(video_element) -> tuple:
 
     vid_elem = video_element.find_element(By.CSS_SELECTOR, "a.ytk-compact-video-renderer")
     title = vid_elem.get_attribute("title")
-    vid_id = parse_vid_id(vid_elem.get_attribute("href"))
+    vid_id = parse_video_id(vid_elem.get_attribute("href"))
 
     return vid_id, title
 
@@ -68,7 +68,7 @@ def _crawl_ytk(driver) -> pd.DataFrame:
     tabs = get_tabs(driver)
     for tab in tabs:
 
-        click(driver, tab)
+        jsclick(driver, tab)
         time.sleep(2)
         # tab_name = tab.get_attribute("title")
         videos, playlists = get_video_parent_lists(driver)

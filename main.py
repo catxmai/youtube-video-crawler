@@ -17,7 +17,7 @@ def click_video_tab(driver, tab):
 
     video_tab_selector = driver.find_element(By.CSS_SELECTOR, "iron-selector#chips")
     video_tab = video_tab_selector.find_element(By.CSS_SELECTOR, f"yt-formatted-string[title='{tab}']")
-    click(driver, video_tab)
+    jsclick(driver, video_tab)
 
 def get_video_elements(driver):
 
@@ -31,7 +31,7 @@ def parse_video_from_element(video_element):
     video_title_link = video_element.find_element(By.CSS_SELECTOR, "a#video-title-link")
     video_title = video_title_link.get_attribute("title")
     video_href = video_title_link.get_attribute("href")
-    video_id = parse_vid_id(video_href)
+    video_id = parse_video_id(video_href)
 
     video_views_str = video_element.find_element(By.CSS_SELECTOR, ".inline-metadata-item.style-scope.ytd-video-meta-block").get_attribute("innerHTML")
     video_views = video_views_str.replace('views', '').strip().lower()
