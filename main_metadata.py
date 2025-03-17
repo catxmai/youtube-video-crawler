@@ -1,0 +1,74 @@
+from utils import *
+
+import csv
+import sys
+
+def load_script_tag(driver: webdriver.Chrome):
+    # loads a web element that contains a lot of useful info
+    global SCRIPT_TAG
+    try:
+        driver_wait(driver, 10, (By.ID, 'microformat'))
+        element_text = driver.find_element(By.CSS_SELECTOR, "#microformat script").get_attribute("innerHTML")
+        SCRIPT_TAG = json.loads(element_text)
+    except TimeoutException:
+        SCRIPT_TAG = None
+
+def get_video_title() -> str:
+    try:
+        title = SCRIPT_TAG['name']
+        return title
+    except (TypeError, KeyError) as e:
+        return None
+    
+
+def get_channel_name() -> str:
+    try:
+        name = SCRIPT_TAG['author']
+        return name
+    except (TypeError, KeyError) as e:
+        return None
+
+
+def get_video_info(video_id_list: list):
+
+    timestamp = get_timestamp()
+    output_file = open(f"ytk_{timestamp}.csv", "w", encoding="utf-8")
+    output_writer = csv.writer(output_file,
+								delimiter = ",",
+								quotechar = '"',
+								quoting = csv.QUOTE_MINIMAL,
+								lineterminator = "\n")
+    
+    output_writer.writerow(['video_id', 'video_url', 'video_title', 'channel_name', 'is_for_kids'])
+
+    for video_id in video_id_list:
+        
+        driver.get(url(video_id))
+        time.sleep(2)
+        load_script_tag(driver)
+        video_title = get_video_title()
+        channel_name = get_channel_name()
+        is_for_kids = is_for_kids(driver)
+
+        output_writer.writerow([video_id,
+                                url(video_id),
+                                video_title,
+                                channel_name])
+        
+        output_file.flush()
+        os.fsync(output_file)
+
+   
+
+if __name__ == "__main__":
+
+    driver = create_driver(headless=False)
+
+    args = sys.argv[1:]
+    if args:
+        input_file = args[0]
+    else:
+        raise RuntimeError('no input file')
+
+    df = pd.read_csv(input_file)
+    get_video_info(df["video_id"].tolist())
