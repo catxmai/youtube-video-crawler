@@ -48,12 +48,13 @@ def get_video_info(video_id_list: list):
         load_script_tag(driver)
         video_title = get_video_title()
         channel_name = get_channel_name()
-        is_for_kids = is_for_kids(driver)
+        video_is_for_kids = is_for_kids(driver)
 
         output_writer.writerow([video_id,
                                 url(video_id),
                                 video_title,
-                                channel_name])
+                                channel_name,
+                                video_is_for_kids])
         
         output_file.flush()
         os.fsync(output_file)
@@ -62,13 +63,13 @@ def get_video_info(video_id_list: list):
 
 if __name__ == "__main__":
 
-    driver = create_driver(headless=False)
-
     args = sys.argv[1:]
     if args:
         input_file = args[0]
     else:
         raise RuntimeError('no input file')
+    
+    driver = create_driver(headless=True)
 
     df = pd.read_csv(input_file)
     get_video_info(df["video_id"].tolist())
