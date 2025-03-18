@@ -71,7 +71,7 @@ def get_video_info(video_id_list: list):
         
         output_file.flush()
         os.fsync(output_file)
-        logger.info(f"{index}: {video_id}")
+        logger.info(f"{index}: {video_id} - ytk: {video_is_for_kids}")
 
    
 
