@@ -2,6 +2,18 @@ from utils import *
 
 import csv
 import sys
+import logging
+
+logger = logging.getLogger("ytk_logger")
+logger.setLevel(logging.DEBUG) 
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+console_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
 
 def load_script_tag(driver: webdriver.Chrome):
     # loads a web element that contains a lot of useful info
@@ -39,25 +51,27 @@ def get_video_info(video_id_list: list):
 								quoting = csv.QUOTE_MINIMAL,
 								lineterminator = "\n")
     
-    output_writer.writerow(['video_id', 'video_url', 'video_title', 'channel_name', 'is_for_kids'])
+    # output_writer.writerow(['video_id', 'video_url', 'video_title', 'channel_name', 'is_for_kids'])
+    output_writer.writerow(['video_id', 'video_url', 'is_for_kids'])
 
-    for video_id in video_id_list:
+    for index, video_id in enumerate(video_id_list):
         
         driver.get(url(video_id))
         time.sleep(2)
-        load_script_tag(driver)
-        video_title = get_video_title()
-        channel_name = get_channel_name()
+        # load_script_tag(driver)
+        # video_title = get_video_title()
+        # channel_name = get_channel_name()
         video_is_for_kids = is_for_kids(driver)
 
         output_writer.writerow([video_id,
                                 url(video_id),
-                                video_title,
-                                channel_name,
+                                # video_title,
+                                # channel_name,
                                 video_is_for_kids])
         
         output_file.flush()
         os.fsync(output_file)
+        logger.info(f"{index}: {video_id}")
 
    
 
