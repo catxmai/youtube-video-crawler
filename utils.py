@@ -56,6 +56,10 @@ def str_to_num(num_str:str) -> int:
             return ret_val
         except:
             raise TypeError('bad arg')
+        
+def boolify(bool_str) -> bool:
+    bool_str = bool_str.strip().lower()
+    return bool_str == "true"
 
 
 def create_driver(headless:bool, user_data_dir="") -> webdriver.Chrome:
