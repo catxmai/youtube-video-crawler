@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import os
 import csv
+import sys
 
 from collections import deque
 
@@ -42,11 +43,17 @@ def crawl_recommendations(driver, url) -> tuple:
 
     time.sleep(1)
     driver.get(url)
-    driver_wait(driver, 5, (By.CSS_SELECTOR, "#related.style-scope"))
-
     ids, titles = [], []
 
-    time.sleep(3)
+    try:
+        driver_wait(driver, 15, (By.CSS_SELECTOR, "#related.style-scope"))
+    except TimeoutException:
+        return ids, titles
+
+
+    time.sleep(1)
+    scroll_to_bottom(driver)
+    time.sleep(2)
 
     playlist_videos = driver.find_elements(
         By.CSS_SELECTOR,
@@ -135,6 +142,8 @@ def crawl_from_videos(driver, video_id_list, branching=False, max_result_count=1
     for video_id in unique_id_list:
         to_crawl.append(video_id)
 
+    # already_seen = set(pd.read_csv("output_ytk/ytk_recs_03202025_2110.csv")["video_id"])
+
     output_writer.writerow(['video_id', 'video_url', 'ytk_url', 'video_title'])
 
     while to_crawl and current_result_count < max_result_count:
@@ -175,48 +184,40 @@ if __name__ == "__main__":
         if not os.path.exists(dir):
             os.makedirs(dir)
 
-    driver = create_driver(headless=False, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_happysquare88")
+    mode = "branch"
+    headless = False
+    input_file = "output_ytk/ytk_home_03202025_1915.csv"
 
-    kid_id_list = [
-        'PT6tCNLiN3g',
-        '0uSj2AIQ6YU',
-        'JzclTA8PmO4',
-        '49a1dQiSJcE',
-        '3YcSsQkJrl8',
-        'E8BCoYnFUFw',
-        'amaVIbxuAHA',
-        'GbgyDPFeLRA',
-        'vLP95DwlD9E',
-        'HUyUUyeH9Wk',
-        'kx8_wF9HOX8',
-    ]
+    args = sys.argv[1:]
+    if args:
+        mode = args[0] # mode is "home" or "branch"
+        headless = boolify(args[1])
+        if mode == "branch":
+            try:
+                input_file = args[2]
+            except:
+                raise InvalidArgumentException()
+    
 
-    non_kid_id_list = [
-        '0xNmWaumkn0',
-        'E-aEGXSVWgA',
-        'nxUOVa_pr04',
-        'VWHTlq5Fcr8',
-        'NjdwxFH6S10',
-        'o_OrXVbEcwo',
-        'PNqKqlYBK90',
-        '8s8kK7p8ues',
-        'LMrx9igQLHc',
-        'GMfCbTCC3_c',
-    ]
-
-    id_list = pd.read_csv("output_ytk/ytk_home_03132025_1445.csv")["video_id"]
+    driver = create_driver(headless=headless, user_data_dir="C:\\Users\\cmai\\Documents\\UserData_hapysquare88")
+    driver.get("https://www.youtubekids.com/")
+    time.sleep(60)
 
     start_time = time.time()
-    result = crawl_from_videos(driver,
-                               id_list,
-                               branching=True,
-                               max_result_count=50000)
-    
-    # result = crawl_from_homepage(driver)
-    # timestamp = get_timestamp()
-    # result.to_csv(f"output_ytk/ytk_home_{timestamp}.csv", index=False)
 
-    print(len(result))
+    if mode == "branch":
+
+        id_list = pd.read_csv(input_file)["video_id"]
+        result = crawl_from_videos(driver,
+                                id_list,
+                                branching=True,
+                                max_result_count=50000)
+    
+    if mode == "home":
+        result = crawl_from_homepage(driver)
+        timestamp = get_timestamp()
+        result.to_csv(f"output_ytk/ytk_home_{timestamp}.csv", index=False)
+
     duration = time.time() - start_time
     print(f"Finished in {duration}s")
 

@@ -37,8 +37,7 @@ def crawl_recommendations(driver, url, target_count=50) -> dict:
                 driver.execute_script("window.scrollBy(0, 500);")
                 time.sleep(4)
 
-            try:
-               
+            try:          
                 video_selector = f"{parent_css} ytd-compact-video-renderer:nth-of-type({i})"
                 video_element = driver.find_element(By.CSS_SELECTOR, video_selector)
                 videos.append(video_element)  

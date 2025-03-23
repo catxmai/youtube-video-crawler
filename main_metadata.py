@@ -88,4 +88,4 @@ if __name__ == "__main__":
     driver = create_driver(headless=headless)
 
     df = pd.read_csv(input_file)
-    get_video_info(df["video_id"].tolist())
+    get_video_info(df[25118:]["video_id"].tolist())
