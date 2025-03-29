@@ -142,7 +142,7 @@ def crawl_from_videos(driver, video_id_list, branching=False, max_result_count=1
     for video_id in unique_id_list:
         to_crawl.append(video_id)
 
-    # already_seen = set(pd.read_csv("output_ytk/ytk_recs_03202025_2110.csv")["video_id"])
+    already_seen = set(pd.read_csv("output_ytk/ytk_recs_03222025_2112.csv")[:25000]["video_id"])
 
     output_writer.writerow(['video_id', 'video_url', 'ytk_url', 'video_title'])
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     if mode == "branch":
 
-        id_list = pd.read_csv(input_file)["video_id"]
+        id_list = pd.read_csv(input_file)[25000:]["video_id"]
         result = crawl_from_videos(driver,
                                 id_list,
                                 branching=True,

@@ -56,7 +56,14 @@ def get_video_info(video_id_list: list):
 
     for index, video_id in enumerate(video_id_list):
         
-        driver.get(url(video_id))
+        is_online = False
+        while not is_online:
+            try:
+                driver.get(url(video_id))
+                is_online = True
+            except TimeoutException:
+                time.sleep(60)
+                
         time.sleep(5)
         # load_script_tag(driver)
         # video_title = get_video_title()
@@ -83,9 +90,10 @@ if __name__ == "__main__":
     else:
         raise RuntimeError('no input file')
     
-    headless = boolify(args[1])
+    index = int(args[1])
+    headless = boolify(args[2])
     
     driver = create_driver(headless=headless)
 
-    df = pd.read_csv(input_file)
-    get_video_info(df[25118:]["video_id"].tolist())
+    df = pd.read_csv(input_file, lineterminator='\n')
+    get_video_info(df[index:]["video_id"].tolist())
